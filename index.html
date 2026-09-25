@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ezX Editor Code — Pro</title>
+
+<!-- Highlight.js untuk syntax highlighting (opsional, ada fallback) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" onerror="this.remove()">
+
+<style>
+/* ==================== RESET ==================== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #0a0e17;
+  color: #e2e8f0;
+  overflow: hidden;
+}
+
+:root {
+  --bg-0: #0a0e17;
+  --bg-1: #0f172a;
+  --bg-2: #1e293b;
+  --bg-3: #334155;
+  --border: #1f2b3e;
+  --text-0: #f1f5f9;
+  --text-1: #cbd5e1;
+  --text-2: #94a3b8;
+  --accent: #38bdf8;
+  --accent-2: #2563eb;
+  --success: #10b981;
+  --warn: #f59e0b;
+  --danger: #ef4444;
+  --purple: #a855f7;
+}
+
+body.light {
+  --bg-0: #f1f5f9;
+  --bg-1: #ffffff;
+  --bg-2: #f8fafc;
+  --bg-3: #e2e8f0;
+  --border: #cbd5e1;
+  --text-0: #0f172a;
+  --text-1: #334155;
+  --text-2: #64748b;
+}
+
+body {
+  background: var(--bg-0);
+  color: var(--text-0);
+  display: flex;
+  flex-direction: column;
+  transition: background 0.3s, color 0.3s;
+  font-size: 14px;
+}
+
+/* ==================== HEADER ==================== */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  min-height: 52px;
+}
+
+.header-left, .header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  min-width: 150px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-icon {
+  width: 34px;
+  height: 34px;
+  background: linear-gradient(135deg, var(--accent), var(--purple));
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: white;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.35);
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.logo-title {
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+}
+
+.logo-sub {
+  font-size: 9px;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-2);
+  transition: background 0.3s;
+  flex-shrink: 0;
+}
+
+.status-dot.saved { background: var(--success); box-shadow: 0 0 8px var(--success); }
+.status-dot.saving { background: var(--warn); animation: pulse 1s infinite; }
+
+@keyframes pulse { 50% { opacity: 0.4; } }
+
+.status-text {
+  font-size: 11px;
+  color: var(--text-2);
+}
+
+/* ==================== LIB PICKER ==================== */
+.lib-picker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-2);
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  font-size: 11px;
+}
+
+.lib-picker select {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-0);
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  max-width: 170px;
+}
+
+.lib-picker select option,
+.lib-picker select optgroup {
+  background: var(--bg-2);
+  color: var(--text-0);
+}
+
+.active-libs {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
+.lib-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(56, 189, 248, 0.15);
+  color: var(--accent);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.lib-chip button {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0;
+  line-height: 1;
+  border-radius: 0;
+  width: auto;
+}
+
+.lib-chip button:hover { color: var(--danger); }
+
+/* ==================== BUTTONS ==================== */
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  border-radius: 6px;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.btn {
+  padding: 7px 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent-2), var(--accent));
+  color: white;
+  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.5);
+}
+
+.btn-primary:active { transform: translateY(0); }
+
+.btn-secondary {
+  background: var(--bg-2);
+  color: var(--text-1);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+  background: var(--bg-3);
+  color: var(--text-0);
+}
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  background: var(--bg-2);
+  color: var(--text-1);
+  border: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.btn-icon:hover {
+  background: var(--bg-3);
+  color: var(--accent);
+}
+
+/* ==================== MAIN LAYOUT ==================== */
+.main {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  background: var(--border);
+  gap: 3px;
+  padding: 3px;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-1);
+  overflow: hidden;
+  border-radius: 6px;
+  min-width: 0;
+}
+
+.editor-panel { flex: 1; }
+.preview-panel { flex: 1; }
+
+.resizer {
+  width: 3px;
+  background: var(--border);
+  cursor: col-resize;
+  flex-shrink: 0;
+  transition: background 0.15s;
+  border-radius: 2px;
+}
+
+.resizer:hover, .resizer.dragging { background: var(--accent); }
+
+/* ==================== TABS ==================== */
+.tabs, .preview-tabs {
+  display: flex;
+  align-items: center;
+  background: var(--bg-0);
+  border-bottom: 1px solid var(--border);
+  padding: 0 4px;
+  flex-shrink: 0;
+  gap: 2px;
+  overflow-x: auto;
+}
+
+.tabs-spacer { flex: 1; min-width: 4px; }
+
+.tab, .ptab {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  color: var(--text-2);
+  padding: 9px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  white-space: nowrap;
+  position: relative;
+}
+
+.tab:hover, .ptab:hover { color: var(--text-0); }
+
+.tab.active, .ptab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  background: var(--bg-1);
+}
+
+.tab .badge-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.tab[data-tab="html"] .badge-dot { background: #e34c26; }
+.tab[data-tab="css"] .badge-dot { background: #264de4; }
+.tab[data-tab="js"] .badge-dot { background: #f7df1e; }
+
+.tab-mini {
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12px;
+  border-radius: 4px;
+}
+
+.tab-mini:hover {
+  background: var(--bg-3);
+  color: var(--accent);
+}
+
+.badge {
+  background: var(--danger);
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 8px;
+  min-width: 16px;
+  text-align: center;
+  margin-left: 4px;
+}
+
+/* ==================== EDITORS ==================== */
+.editors {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.editor-box {
+  position: absolute;
+  inset: 0;
+  display: none;
+  overflow: hidden;
+}
+
+.editor-box.active { display: block; }
+
+.code-area {
+  width: 100%;
+  height: 100%;
+  padding: 14px;
+  background: var(--bg-1);
+  color: var(--text-0);
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: 'Consolas', 'Monaco', 'Menlo', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  tab-size: 2;
+  overflow: auto;
+  white-space: pre;
+  caret-color: var(--accent);
+}
+
+.code-area::selection {
+  background: rgba(56, 189, 248, 0.3);
+}
+
+/* ==================== PREVIEW ==================== */
+.preview-header {
+  padding: 9px 14px;
+  background: var(--bg-0);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.preview-body {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: white;
+}
+
+.view {
+  position: absolute;
+  inset: 0;
+  display: none;
+  border: none;
+  width: 100%;
+  height: 100%;
+}
+
+.view.active { display: block; }
+
+#preview { background: white; }
+
+#console {
+  background: var(--bg-0);
+  color: var(--text-0);
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.console-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-1);
+}
+
+.console-output {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 12px;
+  line-height: 1.6;
+}
+
+.console-line {
+  padding: 4px 8px;
+  border-left: 3px solid transparent;
+  border-radius: 4px;
+  margin-bottom: 3px;
+  word-break: break-word;
+  white-space: pre-wrap;
+  font-family: inherit;
+}
+
+.console-line.log { border-left-color: var(--text-2); background: rgba(148, 163, 184, 0.05); }
+.console-line.info { border-left-color: var(--accent); background: rgba(56, 189, 248, 0.08); color: var(--accent); }
+.console-line.warn { border-left-color: var(--warn); background: rgba(245, 158, 11, 0.08); color: var(--warn); }
+.console-line.error { border-left-color: var(--danger); background: rgba(239, 68, 68, 0.08); color: var(--danger); }
+.console-line.system { border-left-color: var(--purple); color: var(--purple); font-style: italic; }
+
+/* ==================== TOAST ==================== */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(120px);
+  background: var(--bg-2);
+  color: var(--text-0);
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  font-size: 13px;
+  z-index: 1000;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  pointer-events: none;
+}
+
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.success { border-color: var(--success); color: var(--success); }
+.toast.error { border-color: var(--danger); color: var(--danger); }
+.toast.info { border-color: var(--accent); color: var(--accent); }
+
+/* ==================== MODAL ==================== */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 900;
+  backdrop-filter: blur(6px);
+  padding: 20px;
+}
+
+.modal.show { display: flex; }
+
+.modal-content {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px;
+  width: 100%;
+  max-width: 520px;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  animation: modalIn 0.25s ease-out;
+}
+
+@keyframes modalIn {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.modal-content h3 {
+  font-size: 15px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent);
+}
+
+.modal-content p {
+  color: var(--text-2);
+  font-size: 13px;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.share-input {
+  display: flex;
+  gap: 8px;
+}
+
+.share-input input {
+  flex: 1;
+  background: var(--bg-0);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: var(--text-0);
+  font-family: monospace;
+  font-size: 12px;
+  outline: none;
+}
+
+.share-input input:focus { border-color: var(--accent); }
+
+.modal-note {
+  font-size: 11px !important;
+  margin-top: 12px !important;
+  color: var(--text-2) !important;
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--bg-2);
+  border: none;
+  color: var(--text-2);
+  font-size: 14px;
+}
+
+.modal-close:hover { background: var(--danger); color: white; }
+
+/* ==================== LAYOUT MODES ==================== */
+body.layout-code-only .preview-panel,
+body.layout-code-only .resizer { display: none; }
+
+body.layout-preview-only .editor-panel,
+body.layout-preview-only .resizer { display: none; }
+
+/* ==================== SCROLLBAR ==================== */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--bg-0); }
+::-webkit-scrollbar-thumb {
+  background: var(--bg-3);
+  border-radius: 5px;
+  border: 2px solid var(--bg-0);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 900px) {
+  .header { padding: 8px 10px; gap: 6px; }
+  .header-center { order: 3; flex-basis: 100%; justify-content: flex-start; }
+  .logo-text { display: none; }
+  .status-text { display: none; }
+  .btn span.hide-sm { display: none; }
+  .main { flex-direction: column; }
+  .resizer { width: 100%; height: 3px; cursor: row-resize; }
+  .editor-panel, .preview-panel { flex: 1 1 50%; }
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== HEADER ==================== -->
+<header class="header">
+  <div class="header-left">
+    <div class="logo">
+      <div class="logo-icon">ezX</div>
+      <div class="logo-text">
+        <span class="logo-title">ezX Editor</span>
+        <span class="logo-sub">Pro Compiler</span>
+      </div>
+    </div>
+    <div class="status-dot saved" id="statusDot"></div>
+    <span class="status-text" id="statusText">Saved</span>
+  </div>
+
+  <div class="header-center">
+    <div class="lib-picker">
+      <span>📚</span>
+      <select id="libPicker">
+        <option value="">+ Library CDN</option>
+        <optgroup label="CSS Frameworks">
+          <option value="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css|bootstrap">Bootstrap 5</option>
+          <option value="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css|bulma">Bulma</option>
+          <option value="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css|animate">Animate.css</option>
+        </optgroup>
+        <optgroup label="JS Libraries">
+          <option value="https://code.jquery.com/jquery-3.7.1.min.js|jquery">jQuery</option>
+          <option value="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js|axios">Axios</option>
+          <option value="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js|dayjs">Day.js</option>
+          <option value="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js|gsap">GSAP</option>
+          <option value="https://cdn.jsdelivr.net/npm/chart.js|chartjs">Chart.js</option>
+          <option value="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js|threejs">Three.js</option>
+        </optgroup>
+      </select>
+    </div>
+    <div class="active-libs" id="activeLibs"></div>
+  </div>
+
+  <div class="header-right">
+    <button class="btn-icon" id="themeBtn" title="Toggle Theme">🌙</button>
+    <button class="btn-icon" id="layoutBtn" title="Layout">▥</button>
+    <button class="btn-icon" id="fullscreenBtn" title="Fullscreen">⛶</button>
+    <button class="btn btn-secondary" id="shareBtn" title="Share">🔗 <span class="hide-sm">Share</span></button>
+    <button class="btn btn-secondary" id="downloadBtn" title="Download">⬇ <span class="hide-sm">Download</span></button>
+    <button class="btn btn-secondary" id="resetBtn" title="Reset">↺ <span class="hide-sm">Reset</span></button>
+    <button class="btn btn-primary" id="runBtn" title="Run">▶ <span class="hide-sm">Run</span></button>
+  </div>
+</header>
+
+<!-- ==================== MAIN ==================== -->
+<div class="main" id="main">
+  <div class="panel editor-panel" id="editorPanel">
+    <div class="tabs">
+      <button class="tab active" data-tab="html"><span class="badge-dot"></span>HTML</button>
+      <button class="tab" data-tab="css"><span class="badge-dot"></span>CSS</button>
+      <button class="tab" data-tab="js"><span class="badge-dot"></span>JS</button>
+      <div class="tabs-spacer"></div>
+      <button class="tab-mini" id="formatBtn" title="Format">✨</button>
+      <button class="tab-mini" id="clearBtn" title="Clear tab">🧹</button>
+      <button class="tab-mini" id="wrapBtn" title="Word wrap">↔</button>
+    </div>
+
+    <div class="editors">
+      <div class="editor-box active" data-editor="html">
+        <textarea class="code-area" id="html" spellcheck="false"></textarea>
+      </div>
+      <div class="editor-box" data-editor="css">
+        <textarea class="code-area" id="css" spellcheck="false"></textarea>
+      </div>
+      <div class="editor-box" data-editor="js">
+        <textarea class="code-area" id="js" spellcheck="false"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="resizer" id="resizer"></div>
+
+  <div class="panel preview-panel" id="previewPanel">
+    <div class="preview-tabs">
+      <button class="ptab active" data-view="preview">👁 Preview</button>
+      <button class="ptab" data-view="console">⌨ Console <span class="badge" id="consoleBadge" style="display:none;">0</span></button>
+      <div class="tabs-spacer"></div>
+      <button class="tab-mini" id="refreshBtn" title="Refresh">↻</button>
+      <button class="tab-mini" id="popoutBtn" title="Buka di tab baru">↗</button>
+    </div>
+
+    <div class="preview-body">
+      <iframe id="preview" class="view active"></iframe>
+      <div id="console" class="view">
+        <div class="console-toolbar">
+          <button class="tab-mini" id="clearConsoleBtn" title="Clear console">🗑</button>
+        </div>
+        <div class="console-output" id="consoleOutput"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TOAST ==================== -->
+<div class="toast" id="toast"></div>
+
+<!-- ==================== SHARE MODAL ==================== -->
+<div class="modal" id="shareModal">
+  <div class="modal-content">
+    <h3>🔗 Share Your Code</h3>
+    <p>Bagikan link ini agar orang lain bisa melihat dan menjalankan kodemu:</p>
+    <div class="share-input">
+      <input type="text" id="shareUrl" readonly>
+      <button class="btn btn-primary" id="copyShareBtn">📋 Copy</button>
+    </div>
+    <p class="modal-note">💡 Kode disimpan di URL (maks ~8KB).</p>
+    <button class="modal-close" id="closeShareBtn">✕</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   ezX Editor Code — Ultimate Pure Vanilla JS
+   ============================================================ */
+(function() {
+  'use strict';
+
+  console.log('🚀 ezX Editor Code starting...');
+
+  // ==================== DEFAULT CODE ====================
+  var DEFAULT_HTML =
+    '<div class="card">\n' +
+    '  <h1>Hello, World! 🚀</h1>\n' +
+    '  <p>Edit kode di kiri, lihat hasilnya di kanan.</p>\n' +
+    '  <button id="btn" class="btn">Klik Aku</button>\n' +
+    '  <p id="output"></p>\n' +
+    '</div>';
+
+  var DEFAULT_CSS =
+    '* { box-sizing: border-box; }\n' +
+    'body {\n' +
+    '  font-family: system-ui, sans-serif;\n' +
+    '  background: linear-gradient(135deg, #667eea, #764ba2);\n' +
+    '  min-height: 100vh;\n' +
+    '  display: grid;\n' +
+    '  place-items: center;\n' +
+    '  margin: 0;\n' +
+    '  padding: 20px;\n' +
+    '}\n' +
+    '.card {\n' +
+    '  background: white;\n' +
+    '  border-radius: 16px;\n' +
+    '  padding: 40px;\n' +
+    '  text-align: center;\n' +
+    '  box-shadow: 0 20px 60px rgba(0,0,0,0.3);\n' +
+    '  max-width: 400px;\n' +
+    '}\n' +
+    'h1 { color: #1e293b; margin-top: 0; }\n' +
+    'p { color: #64748b; }\n' +
+    '.btn {\n' +
+    '  background: #2563eb;\n' +
+    '  color: white;\n' +
+    '  border: none;\n' +
+    '  padding: 12px 28px;\n' +
+    '  border-radius: 8px;\n' +
+    '  font-size: 15px;\n' +
+    '  font-weight: 600;\n' +
+    '  cursor: pointer;\n' +
+    '  transition: transform 0.2s;\n' +
+    '}\n' +
+    '.btn:hover { transform: scale(1.05); background: #1d4ed8; }\n' +
+    '#output { margin-top: 16px; font-weight: 600; color: #10b981; }';
+
+  var DEFAULT_JS =
+    'var count = 0;\n' +
+    'var btn = document.getElementById("btn");\n' +
+    'var output = document.getElementById("output");\n\n' +
+    'if (btn) {\n' +
+    '  btn.addEventListener("click", function() {\n' +
+    '    count++;\n' +
+    '    output.textContent = "Kamu klik " + count + " kali 🎉";\n' +
+    '    console.log("Klik ke-" + count);\n' +
+    '  });\n' +
+    '}\n\n' +
+    'console.log("ezX Editor Code siap! ✨");';
+
+  // ==================== STATE ====================
+  var STORAGE_KEY = 'ezx_v4';
+  var THEME_KEY = 'ezx_v4_theme';
+  var LAYOUT_KEY = 'ezx_v4_layout';
+  var LIBS_KEY = 'ezx_v4_libs';
+
+  var activeLibs = [];
+  var currentTab = 'html';
+  var saveTimer = null;
+  var previewTimer = null;
+  var consoleCount = 0;
+  var toastTimer = null;
+
+  // ==================== GET ELEMENTS ====================
+  function $(id) { return document.getElementById(id); }
+
+  var htmlEl = $('html');
+  var cssEl = $('css');
+  var jsEl = $('js');
+  var previewEl = $('preview');
+  var statusDot = $('statusDot');
+  var statusText = $('statusText');
+  var consoleOutput = $('consoleOutput');
+  var consoleBadge = $('consoleBadge');
+
+  console.log('✓ Elements loaded');
+
+  // ==================== LOAD FROM STORAGE ====================
+  function loadStorage() {
+    try {
+      var saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+      if (saved) {
+        htmlEl.value = saved.html || DEFAULT_HTML;
+        cssEl.value = saved.css || DEFAULT_CSS;
+        jsEl.value = saved.js || DEFAULT_JS;
+      } else {
+        htmlEl.value = DEFAULT_HTML;
+        cssEl.value = DEFAULT_CSS;
+        jsEl.value = DEFAULT_JS;
+      }
+      console.log('✓ Storage loaded');
+    } catch(e) {
+      console.warn('Storage error:', e);
+      htmlEl.value = DEFAULT_HTML;
+      cssEl.value = DEFAULT_CSS;
+      jsEl.value = DEFAULT_JS;
+    }
+  }
+
+  // ==================== LOAD FROM URL ====================
+  function loadFromURL() {
+    try {
+      var hash = location.hash.slice(1);
+      if (!hash) return false;
+      var b64 = hash.replace(/-/g, '+').replace(/_/g, '/');
+      var json = decodeURIComponent(escape(atob(b64)));
+      var data = JSON.parse(json);
+      if (data.h) htmlEl.value = data.h;
+      if (data.c) cssEl.value = data.c;
+      if (data.j) jsEl.value = data.j;
+      console.log('✓ Loaded from URL');
+      return true;
+    } catch(e) {
+      console.warn('URL load error:', e);
+      return false;
+    }
+  }
+
+  // ==================== SAVE ====================
+  function saveNow() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        html: htmlEl.value,
+        css: cssEl.value,
+        js: jsEl.value
+      }));
+      setStatus('saved');
+    } catch(e) {
+      console.warn('Save error:', e);
+    }
+  }
+
+  function scheduleSave() {
+    setStatus('saving');
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveNow, 500);
+  }
+
+  function setStatus(state) {
+    if (!statusDot || !statusText) return;
+    statusDot.classList.remove('saved', 'saving');
+    if (state === 'saving') {
+      statusDot.classList.add('saving');
+      statusText.textContent = 'Saving...';
+    } else {
+      statusDot.classList.add('saved');
+      statusText.textContent = 'Saved';
+    }
+  }
+
+  // ==================== BUILD HTML ====================
+  function buildHTML() {
+    var cssLibs = '';
+    var jsLibs = '';
+
+    for (var i = 0; i < activeLibs.length; i++) {
+      var lib = activeLibs[i];
+      if (lib.type === 'css') {
+        cssLibs += '<link rel="stylesheet" href="' + lib.url + '">\n';
+      } else {
+        jsLibs += '<script src="' + lib.url + '"><\/script>\n';
+      }
+    }
+
+    // Script untuk intercept console
+    var consoleScript =
+      '<script>\n' +
+      '(function(){\n' +
+      '  function send(type, args){\n' +
+      '    try {\n' +
+      '      var mapped = [];\n' +
+      '      for (var i = 0; i < args.length; i++) {\n' +
+      '        var a = args[i];\n' +
+      '        if (a === null) mapped.push("null");\n' +
+      '        else if (a === undefined) mapped.push("undefined");\n' +
+      '        else if (typeof a === "object") {\n' +
+      '          try { mapped.push(JSON.stringify(a)); } catch(e) { mapped.push("[Object]"); }\n' +
+      '        } else mapped.push(String(a));\n' +
+      '      }\n' +
+      '      parent.postMessage({source:"ezx-preview", type:type, args:mapped}, "*");\n' +
+      '    } catch(e) {}\n' +
+      '  }\n' +
+      '  var methods = ["log","info","warn","error","debug"];\n' +
+      '  for (var i = 0; i < methods.length; i++) {\n' +
+      '    (function(m){\n' +
+      '      var orig = console[m];\n' +
+      '      console[m] = function(){\n' +
+      '        send(m, Array.prototype.slice.call(arguments));\n' +
+      '        orig.apply(console, arguments);\n' +
+      '      };\n' +
+      '    })(methods[i]);\n' +
+      '  }\n' +
+      '  window.addEventListener("error", function(e){\n' +
+      '    send("error", [e.message + " (line " + e.lineno + ")"]);\n' +
+      '  });\n' +
+      '})();\n' +
+      '<\/script>';
+
+    return '<!DOCTYPE html>\n' +
+      '<html>\n' +
+      '<head>\n' +
+      '<meta charset="UTF-8">\n' +
+      cssLibs +
+      '<style>\n' + cssEl.value + '\n</style>\n' +
+      '</head>\n' +
+      '<body>\n' +
+      htmlEl.value + '\n' +
+      jsLibs +
+      consoleScript + '\n' +
+      '</body>\n' +
+      '</html>';
+  }
+
+  // ==================== RUN PREVIEW ====================
+  function runPreview() {
+    try {
+      var html = buildHTML();
+      var doc = previewEl.contentDocument || previewEl.contentWindow.document;
+      doc.open();
+      doc.write(html);
+      doc.close();
+      clearConsole();
+      logConsole('Preview dijalankan', 'system');
+      console.log('✓ Preview rendered');
+    } catch(e) {
+      console.error('Preview error:', e);
+      try { previewEl.srcdoc = buildHTML(); } catch(e2) {}
+    }
+  }
+
+  function schedulePreview() {
+    clearTimeout(previewTimer);
+    previewTimer = setTimeout(runPreview, 700);
+  }
+
+  // ==================== CONSOLE ====================
+  function logConsole(msg, type) {
+    type = type || 'log';
+    if (!consoleOutput) return;
+    var div = document.createElement('div');
+    div.className = 'console-line ' + type;
+    var icons = { log: '›', info: 'ℹ', warn: '⚠', error: '✕', system: '⚡' };
+    div.textContent = (icons[type] || '›') + ' ' + msg;
+    consoleOutput.appendChild(div);
+    consoleOutput.scrollTop = consoleOutput.scrollHeight;
+    consoleCount++;
+    updateBadge();
+  }
+
+  function clearConsole() {
+    if (consoleOutput) consoleOutput.innerHTML = '';
+    consoleCount = 0;
+    updateBadge();
+  }
+
+  function updateBadge() {
+    if (!consoleBadge) return;
+    consoleBadge.textContent = consoleCount;
+    consoleBadge.style.display = consoleCount > 0 ? 'inline-block' : 'none';
+  }
+
+  // Message listener
+  window.addEventListener('message', function(e) {
+    if (e.data && e.data.source === 'ezx-preview') {
+      for (var i = 0; i < e.data.args.length; i++) {
+        logConsole(e.data.args[i], e.data.type);
+      }
+    }
+  });
+
+  // ==================== TABS ====================
+  function initTabs() {
+    var tabs = document.querySelectorAll('.tab');
+    var boxes = document.querySelectorAll('.editor-box');
+
+    for (var i = 0; i < tabs.length; i++) {
+      tabs[i].addEventListener('click', function() {
+        var target = this.getAttribute('data-tab');
+        currentTab = target;
+
+        for (var j = 0; j < tabs.length; j++) tabs[j].classList.remove('active');
+        for (var k = 0; k < boxes.length; k++) boxes[k].classList.remove('active');
+
+        this.classList.add('active');
+        var box = document.querySelector('[data-editor="' + target + '"]');
+        if (box) box.classList.add('active');
+      });
+    }
+
+    // Preview tabs
+    var ptabs = document.querySelectorAll('.ptab');
+    for (var p = 0; p < ptabs.length; p++) {
+      ptabs[p].addEventListener('click', function() {
+        var target = this.getAttribute('data-view');
+
+        for (var q = 0; q < ptabs.length; q++) ptabs[q].classList.remove('active');
+        var views = document.querySelectorAll('.view');
+        for (var r = 0; r < views.length; r++) views[r].classList.remove('active');
+
+        this.classList.add('active');
+        var v = $(target);
+        if (v) v.classList.add('active');
+      });
+    }
+  }
+
+  // ==================== INPUT EVENTS ====================
+  function initInputs() {
+    var areas = [htmlEl, cssEl, jsEl];
+    for (var i = 0; i < areas.length; i++) {
+      (function(el) {
+        if (!el) return;
+        el.addEventListener('input', function() {
+          scheduleSave();
+          schedulePreview();
+        });
+
+        el.addEventListener('keydown', function(e) {
+          if (e.key === 'Tab') {
+            e.preventDefault();
+            var start = this.selectionStart;
+            var end = this.selectionEnd;
+            this.value = this.value.substring(0, start) + '  ' + this.value.substring(end);
+            this.selectionStart = this.selectionEnd = start + 2;
+            scheduleSave();
+            schedulePreview();
+          }
+        });
+      })(areas[i]);
+    }
+  }
+
+  // ==================== BUTTONS ====================
+  function initButtons() {
+    // Run
+    var runBtn = $('runBtn');
+    if (runBtn) runBtn.addEventListener('click', function() {
+      runPreview();
+      showToast('Kode dijalankan ▶', 'success');
+    });
+
+    // Reset
+    var resetBtn = $('resetBtn');
+    if (resetBtn) resetBtn.addEventListener('click', function() {
+      if (!confirm('Reset semua kode ke default?')) return;
+      htmlEl.value = DEFAULT_HTML;
+      cssEl.value = DEFAULT_CSS;
+      jsEl.value = DEFAULT_JS;
+      saveNow();
+      runPreview();
+      showToast('Kode direset 🔄', 'info');
+    });
+
+    // Download
+    var downloadBtn = $('downloadBtn');
+    if (downloadBtn) downloadBtn.addEventListener('click', function() {
+      try {
+        var blob = new Blob([buildHTML()], { type: 'text/html;charset=utf-8' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'ezx-project-' + Date.now() + '.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('File didownload 📥', 'success');
+      } catch(e) {
+        showToast('Gagal download', 'error');
+      }
+    });
+
+    // Share
+    var shareBtn = $('shareBtn');
+    if (shareBtn) shareBtn.addEventListener('click', function() {
+      try {
+        var data = { h: htmlEl.value, c: cssEl.value, j: jsEl.value };
+        var json = JSON.stringify(data);
+        var b64 = btoa(unescape(encodeURIComponent(json)))
+          .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        var url = location.origin + location.pathname + '#' + b64;
+        $('shareUrl').value = url;
+        $('shareModal').classList.add('show');
+      } catch(e) {
+        showToast('Kode terlalu panjang untuk share', 'error');
+      }
+    });
+
+    // Copy share
+    var copyShareBtn = $('copyShareBtn');
+    if (copyShareBtn) copyShareBtn.addEventListener('click', function() {
+      var input = $('shareUrl');
+      if (!input) return;
+      input.select();
+      try {
+        navigator.clipboard.writeText(input.value);
+        showToast('Link dicopy 📋', 'success');
+      } catch(e) {
+        document.execCommand('copy');
+        showToast('Link dicopy 📋', 'success');
+      }
+      $('shareModal').classList.remove('show');
+    });
+
+    // Close share
+    var closeShareBtn = $('closeShareBtn');
+    if (closeShareBtn) closeShareBtn.addEventListener('click', function() {
+      $('shareModal').classList.remove('show');
+    });
+
+    // Format
+    var formatBtn = $('formatBtn');
+    if (formatBtn) formatBtn.addEventListener('click', function() {
+      var el = currentTab === 'html' ? htmlEl : currentTab === 'css' ? cssEl : jsEl;
+      el.value = simpleFormat(el.value);
+      scheduleSave();
+      schedulePreview();
+      showToast('Kode diformat ✨', 'success');
+    });
+
+    // Clear tab
+    var clearBtn = $('clearBtn');
+    if (clearBtn) clearBtn.addEventListener('click', function() {
+      if (!confirm('Kosongkan tab ' + currentTab.toUpperCase() + '?')) return;
+      var el = currentTab === 'html' ? htmlEl : currentTab === 'css' ? cssEl : jsEl;
+      el.value = '';
+      scheduleSave();
+      schedulePreview();
+    });
+
+    // Word wrap
+    var wrapBtn = $('wrapBtn');
+    if (wrapBtn) wrapBtn.addEventListener('click', function() {
+      var el = currentTab === 'html' ? htmlEl : currentTab === 'css' ? cssEl : jsEl;
+      var current = el.style.whiteSpace;
+      el.style.whiteSpace = current === 'pre-wrap' ? 'pre' : 'pre-wrap';
+      showToast('Word wrap: ' + (el.style.whiteSpace === 'pre-wrap' ? 'ON' : 'OFF'), 'info');
+    });
+
+    // Refresh
+    var refreshBtn = $('refreshBtn');
+    if (refreshBtn) refreshBtn.addEventListener('click', runPreview);
+
+    // Popout
+    var popoutBtn = $('popoutBtn');
+    if (popoutBtn) popoutBtn.addEventListener('click', function() {
+      try {
+        var w = window.open('', '_blank');
+        if (!w) { showToast('Popup diblokir', 'error'); return; }
+        w.document.open();
+        w.document.write(buildHTML());
+        w.document.close();
+      } catch(e) {
+        showToast('Gagal buka tab baru', 'error');
+      }
+    });
+
+    // Clear console
+    var clearConsoleBtn = $('clearConsoleBtn');
+    if (clearConsoleBtn) clearConsoleBtn.addEventListener('click', clearConsole);
+
+    // Theme
+    var themeBtn = $('themeBtn');
+    if (themeBtn) themeBtn.addEventListener('click', function() {
+      document.body.classList.toggle('light');
+      var isLight = document.body.classList.contains('light');
+      themeBtn.textContent = isLight ? '☀' : '🌙';
+      try { localStorage.setItem(THEME_KEY, isLight ? 'light' : 'dark'); } catch(e) {}
+    });
+
+    // Layout
+    var layoutBtn = $('layoutBtn');
+    var layouts = ['', 'layout-code-only', 'layout-preview-only'];
+    if (layoutBtn) layoutBtn.addEventListener('click', function() {
+      var current = '';
+      for (var i = 0; i < layouts.length; i++) {
+        if (layouts[i] && document.body.classList.contains(layouts[i])) current = layouts[i];
+      }
+      for (var j = 0; j < layouts.length; j++) {
+        if (layouts[j]) document.body.classList.remove(layouts[j]);
+      }
+      var idx = layouts.indexOf(current);
+      var next = layouts[(idx + 1) % layouts.length];
+      if (next) document.body.classList.add(next);
+      try { localStorage.setItem(LAYOUT_KEY, next); } catch(e) {}
+    });
+
+    // Fullscreen
+    var fullscreenBtn = $('fullscreenBtn');
+    if (fullscreenBtn) fullscreenBtn.addEventListener('click', function() {
+      if (!document.fullscreenElement) {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen().catch(function(){});
+        }
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    });
+
+    // Lib picker
+    var libPicker = $('libPicker');
+    if (libPicker) libPicker.addEventListener('change', function(e) {
+      var val = e.target.value;
+      if (!val) return;
+      var parts = val.split('|');
+      addLib(parts[0], parts[1]);
+      e.target.value = '';
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        runPreview();
+        showToast('Kode dijalankan ▶', 'success');
+      }
+      if (e.key === 'Escape') {
+        var m = $('shareModal');
+        if (m) m.classList.remove('show');
+      }
+    });
+  }
+
+  // ==================== LIBS ====================
+  function addLib(url, name) {
+    for (var i = 0; i < activeLibs.length; i++) {
+      if (activeLibs[i].name === name) {
+        showToast('Library sudah aktif', 'info');
+        return;
+      }
+    }
+    var type = (url.indexOf('.css') > -1 || url.indexOf('fonts.googleapis') > -1) ? 'css' : 'js';
+    activeLibs.push({ url: url, name: name, type: type });
+    renderLibs();
+    saveLibs();
+    runPreview();
+    showToast(name + ' ditambahkan ✅', 'success');
+  }
+
+  function removeLib(name) {
+    activeLibs = activeLibs.filter(function(l) { return l.name !== name; });
+    renderLibs();
+    saveLibs();
+    runPreview();
+    showToast(name + ' dihapus', 'info');
+  }
+
+  function renderLibs() {
+    var container = $('activeLibs');
+    if (!container) return;
+    if (activeLibs.length === 0) {
+      container.innerHTML = '';
+      return;
+    }
+    var html = '';
+    for (var i = 0; i < activeLibs.length; i++) {
+      html += '<span class="lib-chip">' + activeLibs[i].name +
+        '<button data-lib="' + activeLibs[i].name + '" title="Hapus">×</button></span>';
+    }
+    container.innerHTML = html;
+
+    var btns = container.querySelectorAll('button[data-lib]');
+    for (var j = 0; j < btns.length; j++) {
+      btns[j].addEventListener('click', function() {
+        removeLib(this.getAttribute('data-lib'));
+      });
+    }
+  }
+
+  function saveLibs() {
+    try { localStorage.setItem(LIBS_KEY, JSON.stringify(activeLibs)); } catch(e) {}
+  }
+
+  function loadLibs() {
+    try {
+      var saved = JSON.parse(localStorage.getItem(LIBS_KEY) || '[]');
+      if (Array.isArray(saved)) {
+        activeLibs = saved;
+        renderLibs();
+      }
+    } catch(e) {}
+  }
+
+  // ==================== FORMAT ====================
+  function simpleFormat(code) {
+    if (!code) return code;
+    var lines = code.split('\n');
+    var out = [];
+    var indent = 0;
+
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i].trim();
+      if (!line) { out.push(''); continue; }
+
+      if (/^(<\/(?!html|body|head)|}|\))/.test(line)) {
+        indent = Math.max(0, indent - 1);
+      }
+      out.push(new Array(indent + 1).join('  ') + line);
+      if ((/<[^\/!][^>]*[^\/]>$/.test(line) && !/<(br|hr|img|input|meta|link)/i.test(line)) || /[{(]$/.test(line)) {
+        indent++;
+      }
+    }
+    return out.join('\n');
+  }
+
+  // ==================== THEME ====================
+  function loadTheme() {
+    try {
+      if (localStorage.getItem(THEME_KEY) === 'light') {
+        document.body.classList.add('light');
+        var t = $('themeBtn');
+        if (t) t.textContent = '☀';
+      }
+    } catch(e) {}
+  }
+
+  function loadLayout() {
+    try {
+      var saved = localStorage.getItem(LAYOUT_KEY);
+      if (saved && saved !== '') {
+        document.body.classList.add(saved);
+      }
+    } catch(e) {}
+  }
+
+  // ==================== TOAST ====================
+  function showToast(msg, type) {
+    type = type || 'info';
+    var toast = $('toast');
+    if (!toast) return;
+    var icons = { success: '✅', error: '❌', info: 'ℹ️' };
+    toast.textContent = (icons[type] || '') + ' ' + msg;
+    toast.className = 'toast show ' + type;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function() {
+      toast.classList.remove('show');
+    }, 2400);
+  }
+
+  // ==================== RESIZER ====================
+  function initResizer() {
+    var resizer = $('resizer');
+    var editorPanel = $('editorPanel');
+    var main = $('main');
+    if (!resizer || !editorPanel || !main) return;
+
+    var dragging = false;
+
+    resizer.addEventListener('mousedown', function(e) {
+      dragging = true;
+      resizer.classList.add('dragging');
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+      e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', function(e) {
+      if (!dragging) return;
+      var rect = main.getBoundingClientRect();
+      var isMobile = window.innerWidth <= 900;
+      var pct;
+      if (isMobile) {
+        pct = ((e.clientY - rect.top) / rect.height) * 100;
+      } else {
+        pct = ((e.clientX - rect.left) / rect.width) * 100;
+      }
+      var clamped = Math.max(20, Math.min(80, pct));
+      editorPanel.style.flex = '0 0 ' + clamped + '%';
+    });
+
+    document.addEventListener('mouseup', function() {
+      if (!dragging) return;
+      dragging = false;
+      resizer.classList.remove('dragging');
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    });
+  }
+
+  // ==================== INIT ====================
+  function init() {
+    loadTheme();
+    loadLayout();
+    loadLibs();
+    loadStorage();
+    loadFromURL();
+    initTabs();
+    initInputs();
+    initButtons();
+    initResizer();
+
+    // Run preview pertama kali
+    setTimeout(runPreview, 100);
+
+    console.log('✅ ezX Editor Code ready!');
+  }
+
+  // Start
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+})();
+</script>
+
+</body>
+</html>

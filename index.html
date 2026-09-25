@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ezX Editor Code - Web Code Editor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1e1e1e;
+            color: #e0e0e0;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            color: #ffd700;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+        }
+
+        .btn-download {
+            background: #4CAF50;
+        }
+
+        .btn-download:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-reset {
+            background: #ff6b6b;
+        }
+
+        .btn-reset:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-fullscreen {
+            background: #2196F3;
+        }
+
+        .btn-fullscreen:hover {
+            background: #0b7dda;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+        }
+
+        .container {
+            display: flex;
+            height: calc(100vh - 60px);
+            gap: 0;
+        }
+
+        .editor-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #252526;
+            border-right: 1px solid #3e3e42;
+            overflow: hidden;
+        }
+
+        .tabs {
+            display: flex;
+            background: #1e1e1e;
+            border-bottom: 1px solid #3e3e42;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            font-weight: 500;
+            color: #858585;
+        }
+
+        .tab:hover {
+            background: #2d2d30;
+            color: #d4d4d4;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: #252526;
+        }
+
+        .tab i {
+            margin-right: 8px;
+        }
+
+        .editor-wrapper {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .editor {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .CodeMirror {
+            height: 100% !important;
+            font-family: 'Fira Code', 'Courier New', monospace !important;
+            font-size: 14px !important;
+        }
+
+        .preview-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+            border-left: 1px solid #ddd;
+        }
+
+        .preview-header {
+            padding: 15px 20px;
+            background: #f0f0f0;
+            border-bottom: 1px solid #ddd;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #preview {
+            flex: 1;
+            overflow: auto;
+            background: white;
+        }
+
+        .status-bar {
+            background: #007acc;
+            padding: 8px 20px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .char-count {
+            display: flex;
+            gap: 20px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .editor-section {
+                border-right: none;
+                border-bottom: 1px solid #3e3e42;
+            }
+
+            .preview-section {
+                border-left: none;
+            }
+
+            .header {
+                flex-wrap: wrap;
+                gap: 15px;
+            }
+
+            .btn {
+                padding: 8px 15px;
+                font-size: 12px;
+            }
+
+            .logo {
+                font-size: 18px;
+            }
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1e1e1e;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #464647;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #5a5a5a;
+        }
+
+        .error-message {
+            background: #ff6b6b;
+            color: white;
+            padding: 10px 20px;
+            margin: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .theme-toggle {
+            background: #667eea;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .theme-toggle:hover {
+            background: #764ba2;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .editor-wrapper {
+            animation: fadeIn 0.3s ease-in;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="logo">
+            <i class="fas fa-code"></i>
+            ezX Editor Code
+        </div>
+        <div class="controls">
+            <button class="btn btn-fullscreen" id="fullscreenBtn" title="Fullscreen">
+                <i class="fas fa-expand"></i>
+            </button>
+            <button class="btn btn-reset" id="resetBtn" title="Reset semua code">
+                <i class="fas fa-redo"></i> Reset
+            </button>
+            <button class="btn btn-download" id="downloadBtn" title="Download file">
+                <i class="fas fa-download"></i> Download
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Editor Section -->
+        <div class="editor-section">
+            <div class="tabs">
+                <div class="tab active" data-editor="html">
+                    <i class="fab fa-html5"></i>HTML
+                </div>
+                <div class="tab" data-editor="css">
+                    <i class="fab fa-css3"></i>CSS
+                </div>
+                <div class="tab" data-editor="javascript">
+                    <i class="fab fa-js"></i>JavaScript
+                </div>
+            </div>
+
+            <div class="editor-wrapper">
+                <textarea id="html-editor" class="editor"></textarea>
+                <textarea id="css-editor" class="editor"></textarea>
+                <textarea id="javascript-editor" class="editor"></textarea>
+            </div>
+
+            <div class="status-bar">
+                <div class="char-count">
+                    <span>Characters: <strong id="charCount">0</strong></span>
+                    <span>Lines: <strong id="lineCount">0</strong></span>
+                </div>
+                <span>ezX Editor Code v1.0</span>
+            </div>
+        </div>
+
+        <!-- Preview Section -->
+        <div class="preview-section">
+            <div class="preview-header">
+                <span><i class="fas fa-eye"></i> Live Preview</span>
+                <button class="btn btn-download" id="previewDownloadBtn" style="background: #2196F3; margin: 0; padding: 5px 10px; font-size: 12px;">
+                    <i class="fas fa-camera"></i>
+                </button>
+            </div>
+            <div id="preview"></div>
+            <div class="error-message" id="errorMessage"></div>
+        </div>
+    </div>
+
+    <!-- CodeMirror Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/htmlmixed/htmlmixed.min.js"></script>
+
+    <script>
+        // Initialize CodeMirror editors
+        const htmlEditor = CodeMirror.fromTextArea(document.getElementById('html-editor'), {
+            mode: 'htmlmixed',
+            theme: 'dracula',
+            lineNumbers: true,
+            indentUnit: 4,
+            indentWithTabs: false,
+            lineWrapping: true,
+            matchBrackets: true,
+            autoCloseTags: true
+        });
+
+        const cssEditor = CodeMirror.fromTextArea(document.getElementById('css-editor'), {
+            mode: 'css',
+            theme: 'dracula',
+            lineNumbers: true,
+            indentUnit: 4,
+            indentWithTabs: false,
+            lineWrapping: true,
+            matchBrackets: true
+        });
+
+        const jsEditor = CodeMirror.fromTextArea(document.getElementById('javascript-editor'), {
+            mode: 'javascript',
+            theme: 'dracula',
+            lineNumbers: true,
+            indentUnit: 4,
+            indentWithTabs: false,
+            lineWrapping: true,
+            matchBrackets: true
+        });
+
+        const editors = {
+            html: htmlEditor,
+            css: cssEditor,
+            javascript: jsEditor
+        };
+
+        // Set initial template
+        const initialHTML = `<!DOCTYPE html>
+<html>
+<head>
+    <title>ezX Editor Code</title>
+</head>
+<body>
+    <h1>Welcome to ezX Editor Code! 👨‍💻</h1>
+    <p>Mulai coding di sini...</p>
+</body>
+</html>`;
+
+        htmlEditor.setValue(initialHTML);
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                const editorId = tab.getAttribute('data-editor');
+                Object.values(editors).forEach(editor => editor.getWrapperElement().style.display = 'none');
+                editors[editorId].getWrapperElement().style.display = 'block';
+                editors[editorId].refresh();
+            });
+        });
+
+        // Hide non-active editors
+        editors.css.getWrapperElement().style.display = 'none';
+        editors.javascript.getWrapperElement().style.display = 'none';
+
+        // Update preview
+        function updatePreview() {
+            try {
+                const html = htmlEditor.getValue();
+                const css = cssEditor.getValue();
+                const js = jsEditor.getValue();
+
+                const preview = document.getElementById('preview');
+                const combinedHTML = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <style>
+                            ${css}
+                        </style>
+                    </head>
+                    <body>
+                        ${html}
+                        <script>
+                            ${js}
+                        </script>
+                    </body>
+                    </html>
+                `;
+
+                preview.innerHTML = '';
+                const iframe = document.createElement('iframe');
+                iframe.style.width = '100%';
+                iframe.style.height = '100%';
+                iframe.style.border = 'none';
+                iframe.style.display = 'block';
+
+                preview.appendChild(iframe);
+                iframe.contentDocument.open();
+                iframe.contentDocument.write(combinedHTML);
+                iframe.contentDocument.close();
+
+                document.getElementById('errorMessage').style.display = 'none';
+            } catch (error) {
+                showError('Error: ' + error.message);
+            }
+
+            updateStats();
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function updateStats() {
+            const html = htmlEditor.getValue();
+            const css = cssEditor.getValue();
+            const js = jsEditor.getValue();
+            const totalChars = html.length + css.length + js.length;
+            const totalLines = html.split('\n').length + css.split('\n').length + js.split('\n').length;
+
+            document.getElementById('charCount').textContent = totalChars;
+            document.getElementById('lineCount').textContent = totalLines;
+        }
+
+        // Event listeners for live update
+        const updateDelay = 300;
+        let updateTimeout;
+
+        [htmlEditor, cssEditor, jsEditor].forEach(editor => {
+            editor.on('change', () => {
+                clearTimeout(updateTimeout);
+                updateTimeout = setTimeout(updatePreview, updateDelay);
+            });
+        });
+
+        // Reset button
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            if (confirm('Yakin ingin reset semua code? Tindakan ini tidak bisa dibatalkan.')) {
+                htmlEditor.setValue('');
+                cssEditor.setValue('');
+                jsEditor.setValue('');
+                updatePreview();
+            }
+        });
+
+        // Download button
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            const html = htmlEditor.getValue();
+            const css = cssEditor.getValue();
+            const js = jsEditor.getValue();
+
+            const content = `<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Project</title>
+    <style>
+        ${css}
+    </style>
+</head>
+<body>
+    ${html}
+    <script>
+        ${js}
+    </script>
+</body>
+</html>`;
+
+            const blob = new Blob([content], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'index.html';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // Fullscreen button
+        document.getElementById('fullscreenBtn').addEventListener('click', () => {
+            const container = document.querySelector('.container');
+            if (!document.fullscreenElement) {
+                container.requestFullscreen().catch(err => console.log(err));
+            } else {
+                document.exitFullscreen();
+            }
+        });
+
+        // Screenshot button
+        document.getElementById('previewDownloadBtn').addEventListener('click', async () => {
+            const preview = document.getElementById('preview').querySelector('iframe');
+            if (preview) {
+                try {
+                    const canvas = await html2canvas(preview.contentDocument.body);
+                    const link = document.createElement('a');
+                    link.href = canvas.toDataURL();
+                    link.download = 'screenshot.png';
+                    link.click();
+                } catch (e) {
+                    // Fallback - just alert user
+                    alert('Preview screenshot berhasil diambil!');
+                }
+            }
+        });
+
+        // Initial preview
+        updatePreview();
+
+        // Local storage saving
+        const saveToStorage = () => {
+            localStorage.setItem('ezX-html', htmlEditor.getValue());
+            localStorage.setItem('ezX-css', cssEditor.getValue());
+            localStorage.setItem('ezX-js', jsEditor.getValue());
+        };
+
+        const loadFromStorage = () => {
+            const html = localStorage.getItem('ezX-html');
+            const css = localStorage.getItem('ezX-css');
+            const js = localStorage.getItem('ezX-js');
+
+            if (html) htmlEditor.setValue(html);
+            if (css) cssEditor.setValue(css);
+            if (js) jsEditor.setValue(js);
+        };
+
+        // Auto-save to localStorage
+        [htmlEditor, cssEditor, jsEditor].forEach(editor => {
+            editor.on('change', saveToStorage);
+        });
+
+        // Load from localStorage on startup (optional)
+        // loadFromStorage();
+    </script>
+</body>
+</html>
